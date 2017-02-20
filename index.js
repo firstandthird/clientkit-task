@@ -81,6 +81,12 @@ class TaskKitTask {
     done();
   }
 
+  writeMany(fileArray, contentArray, allDone) {
+    async.eachOf(fileArray, (fileName, index, done) => {
+      this.write(fileName, contentArray[index], done);
+    }, allDone);
+  }
+
   write(filename, contents, allDone) {
     if (!contents) {
       this.log(['warning'], `attempting to write empty string to ${filename}`);
