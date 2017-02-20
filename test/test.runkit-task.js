@@ -194,3 +194,30 @@ test('writes files to dist directory ', (t) => {
     });
   });
 });
+
+test('handles input as object', (t) => {
+  const task = new TaskKitTask('test', {
+    files: {
+      outputAsObject: {
+        input: 'inputFromObject1',
+        glop: true
+      },
+      outputAsObject2: {
+        input: 'inputFromObject1',
+        glyf: 'moe'
+      }
+    }
+  }, {});
+  task.process = (input, output, done) => {
+    done(null, Object.keys(task.options));
+  };
+  task.execute((err, val) => {
+    t.equal(err, null);
+    t.equal(val.length, 2, 'handles files specified as objects');
+    t.equal(val[0].length, 2, 'options are correct during process');
+    t.equal(val[1].length, 2, 'options are correct during process');
+    t.equal(val[0][1], 'glop', 'options are correct during process');
+    t.equal(val[1][1], 'glyf', 'options are correct during process');
+    t.end();
+  });
+});
