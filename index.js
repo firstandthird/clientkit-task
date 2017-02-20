@@ -81,9 +81,9 @@ class TaskKitTask {
     done();
   }
 
-  writeMany(fileArray, contentArray, allDone) {
-    async.eachOf(fileArray, (fileName, index, done) => {
-      this.write(fileName, contentArray[index], done);
+  writeMany(fileContents, allDone) {
+    async.mapValues(fileContents, (fileContent, fileName, done) => {
+      this.write(fileName, fileContent, done);
     }, allDone);
   }
 

@@ -203,7 +203,10 @@ test('writeMany files to dist directory ', (t) => {
       output1: 'input1'
     }
   }, {});
-  task.writeMany(['output1.txt', 'output2.txt'], ['contents1', 'contents2'], (err, outcome) => {
+  task.writeMany({
+    'output1.txt': 'contents1',
+    'output2.txt': 'contents2'
+  }, (err, outcome) => {
     t.equal(err, null);
     fs.exists('test/dist/output1.txt', (exists) => {
       t.equal(exists, true);
