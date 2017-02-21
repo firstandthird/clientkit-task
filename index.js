@@ -71,21 +71,20 @@ class TaskKitTask {
         eachDone(null, results);
       };
       // if process was designed to take in a local options param:
-      if (this.process.length === 4) {
-        // make sure we have fresh options:
-        const options = Object.assign({}, originalOptions);
-        // if item is an object, copy over all keys as options except 'input':
-        if (typeof item === 'object') {
-          Object.keys(item).forEach((key) => {
-            if (key !== 'input') {
-              options[key] = item[key];
-            }
-          });
-        }
-        this.process(inputName, outputFile, options, processDone);
-      } else {
-        this.process(inputName, outputFile, processDone);
+      if (this.process.length === 3) {
+        return this.process(inputName, outputFile, processDone);
       }
+      // make sure we have fresh options:
+      const options = Object.assign({}, originalOptions);
+      // if item is an object, copy over all keys as options except 'input':
+      if (typeof item === 'object') {
+        Object.keys(item).forEach((key) => {
+          if (key !== 'input') {
+            options[key] = item[key];
+          }
+        });
+      }
+      this.process(inputName, outputFile, options, processDone);
     }, (err, results) => {
       if (err) {
         return allDone(err);
