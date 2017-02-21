@@ -57,21 +57,11 @@ class TaskKitTask {
     const originalOptions = this.options;
     // must be done sequentially so that this.options does not get changed
     // in between calls to .process:
-    async.mapSeries(filenames, (outputFile, eachDone) => {
+    async.map(filenames, (outputFile, eachDone) => {
       const item = items[outputFile];
       const inputName = typeof item === 'object' ? item.input : item;
       const start = new Date().getTime();
-      // make sure we have fresh options:
-      this.options = Object.assign({}, originalOptions);
-      // if item is an object, copy over all keys as options except 'input':
-      if (typeof item === 'object') {
-        Object.keys(item).forEach((key) => {
-          if (key !== 'input') {
-            this.options[key] = item[key];
-          }
-        });
-      }
-      this.process(inputName, outputFile, (err, results) => {
+      const processDone = (err, results) => {
         if (err) {
           return eachDone(err);
         }
@@ -79,7 +69,23 @@ class TaskKitTask {
         const duration = (end - start) / 1000;
         this.log(`Processed ${outputFile} in ${duration} sec`);
         eachDone(null, results);
-      });
+      };
+      // if process was designed to take in a local options param:
+      if (this.process.length === 4) {
+        // make sure we have fresh options:
+        const options = Object.assign({}, originalOptions);
+        // if item is an object, copy over all keys as options except 'input':
+        if (typeof item === 'object') {
+          Object.keys(item).forEach((key) => {
+            if (key !== 'input') {
+              options[key] = item[key];
+            }
+          });
+        }
+        this.process(inputName, outputFile, options, processDone);
+      } else {
+        this.process(inputName, outputFile, processDone);
+      }
     }, (err, results) => {
       if (err) {
         return allDone(err);
@@ -92,7 +98,10 @@ class TaskKitTask {
     done(null, results);
   }
 
-  process(input, output, done) {
+  process(input, output, options, done) {
+    if (typeof options === 'function') {
+      done = options;
+    }
     done();
   }
 
