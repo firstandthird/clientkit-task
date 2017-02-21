@@ -208,8 +208,13 @@ test('handles input as object', (t) => {
       }
     }
   }, {});
+  // use 'delay' so the first process ends after the second:
+  let delay = 2000;
   task.process = (input, output, done) => {
-    done(null, Object.keys(task.options));
+    setTimeout(() => {
+      done(null, Object.keys(task.options));
+    }, delay);
+    delay = 10;
   };
   task.execute((err, val) => {
     t.equal(err, null);
