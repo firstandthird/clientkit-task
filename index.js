@@ -5,7 +5,15 @@ const fs = require('fs');
 const aug = require('aug');
 const bytesize = require('bytesize');
 const mkdirp = require('mkdirp');
+const spawn = require('threads').spawn;
 
+const runInParallel = (data, allDone) => {
+  const ProcessClassDef = require(data.classModule);
+  this.taskInstance = new ProcessClassDef(data.name, data);
+  this.taskInstance.options.multithread = false;
+  this.taskInstance.name = data.name;
+  this.taskInstance.execute(allDone);
+};
 
 class TaskKitTask {
   constructor(name, options, kit) {
@@ -13,6 +21,10 @@ class TaskKitTask {
     this.options = aug('deep', {}, this.defaultOptions, options);
     this.kit = kit || {};
     this.init();
+  }
+  // returns the module to load when running in a separate process:
+  get classModule() {
+    return path.join(__dirname, 'index.js');
   }
   // your custom tasks can define their own default options:
   get defaultOptions() {
@@ -44,6 +56,25 @@ class TaskKitTask {
   }
 
   execute(allDone) {
+    if (this.options.multithread) {
+      const options = Object.assign({}, this.options);
+      options.classModule = this.classModule;
+      options.multithread = false;
+      options.name = this.name;
+      const thread = spawn(runInParallel);
+      thread.send(options)
+      .on('message', (response) => {
+        console.log(response)
+        thread.kill();
+      })
+      .on('error', function(error) {
+        console.error('Worker errored:', error);
+      })
+      .on('exit', function() {
+        console.log('Worker has been terminated.');
+      });
+      return;
+    }
     const items = this.options.files || this.options.items;
     if (!items) {
       this.log(['warning'], 'No input files, skipping');
