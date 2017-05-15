@@ -7,6 +7,7 @@ const bytesize = require('bytesize');
 const mkdirp = require('mkdirp');
 const spawn = require('threads').spawn;
 
+// a wrapper for running tasks in their own process:
 const runInParallel = (data, allDone) => {
   const ProcessClassDef = require(data.classModule);
   this.taskInstance = new ProcessClassDef(data.name, data);
@@ -63,16 +64,14 @@ class TaskKitTask {
       options.name = this.name;
       const thread = spawn(runInParallel);
       thread.send(options)
-      .on('message', (response) => {
-        console.log(response)
-        thread.kill();
-      })
-      .on('error', function(error) {
-        console.error('Worker errored:', error);
-      })
-      .on('exit', function() {
-        console.log('Worker has been terminated.');
-      });
+        .on('message', (response) => {
+          thread.kill();
+          return allDone(null, response);
+        })
+        .on('error', (error) => {
+          allDone(error);
+        })
+        .on('exit', () => {});
       return;
     }
     const items = this.options.files || this.options.items;

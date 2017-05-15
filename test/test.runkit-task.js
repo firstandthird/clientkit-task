@@ -259,7 +259,6 @@ test('writeMany files to dist directory ', (t) => {
 });
 
 test('parallel execute -- will fire process on items in list in separate process', (t) => {
-  t.plan(3);
   const task = new TaskKitTask('test', {
     multithread: true,
     items: {
@@ -267,11 +266,11 @@ test('parallel execute -- will fire process on items in list in separate process
     }
   }, {});
   task.process = (input, output, done) => {
-    t.equal(input, 'input1');
-    t.equal(output, 'output1');
-    done(123);
+    // this takes place in a child_process
+    done(null, 123);
   };
-  task.execute((val) => {
-    t.equal(val, 123);
+  task.execute((err, res) => {
+    t.equal(err, null);
+    t.end();
   });
 });
