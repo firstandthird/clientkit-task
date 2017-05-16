@@ -10,10 +10,10 @@ const spawn = require('threads').spawn;
 // a wrapper for running tasks in their own process:
 const runInParallel = (data, allDone) => {
   const ProcessClassDef = require(data.classModule);
-  this.taskInstance = new ProcessClassDef(data.name, data);
-  this.taskInstance.options.multithread = false;
-  this.taskInstance.name = data.name;
-  this.taskInstance.execute(allDone);
+  const taskInstance = new ProcessClassDef(data.name, data);
+  taskInstance.options.multithread = false;
+  taskInstance.name = data.name;
+  taskInstance.execute(allDone);
 };
 
 class TaskKitTask {
