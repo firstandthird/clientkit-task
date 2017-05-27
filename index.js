@@ -88,7 +88,7 @@ class TaskKitTask {
     // in between calls to .process:
     async.map(filenames, (outputFile, eachDone) => {
       const item = items[outputFile];
-      const inputName = typeof item === 'object' ? item.input : item;
+      const inputName = item;
       const start = new Date().getTime();
       const processDone = (err, results) => {
         if (err) {
