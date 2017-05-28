@@ -88,6 +88,10 @@ class TaskKitTask {
     // in between calls to .process:
     async.map(filenames, (outputFile, eachDone) => {
       const item = items[outputFile];
+      let inputName = item;
+      if (typeof item === 'object' && item.input) {
+        inputName = item.input;
+      }
       const start = new Date().getTime();
       const processDone = (err, results) => {
         if (err) {
@@ -100,7 +104,7 @@ class TaskKitTask {
       };
       // if process was designed to take in a local options param:
       if (this.process.length === 3) {
-        return this.process(item, outputFile, processDone);
+        return this.process(inputName, outputFile, processDone);
       }
       // make sure we have fresh options:
       const options = Object.assign({}, originalOptions);
@@ -112,7 +116,7 @@ class TaskKitTask {
           }
         });
       }
-      this.process(item, outputFile, options, processDone);
+      this.process(inputName, outputFile, options, processDone);
     }, (err, results) => {
       if (err) {
         return allDone(err);
