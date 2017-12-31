@@ -27,7 +27,7 @@
     "logr-cli-fancy": "^0.2.0",
     "logr-reporter-bell": "0.0.1",
     "mkdirp-promise": "^5.0.1",
-    "threads": "^0.7.3"
+    "threads": "^0.10.0"
   },
   "devDependencies": {
     "eslint": "3.13.1",

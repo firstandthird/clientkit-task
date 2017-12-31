@@ -8,15 +8,17 @@ const spawn = require('threads').spawn;
 const Logr = require('logr');
 const util = require('util');
 
-// a wrapper for running tasks in their own process
-// threads.spawn needs the 'done' callback to close the thread:
-const runInParallel = async(data, done) => {
+// runInParallel is a wrapper for running tasks in their own process.
+// Since it runs in a different node process, it will break
+// code coverage, so it must be ignored:
+
+/* istanbul ignore next */
+const runInParallel = async(data) => {
   const ProcessClassDef = require(data.classModule);
   const taskInstance = new ProcessClassDef(data.name, data);
   taskInstance.options.multithread = false;
   taskInstance.name = data.name;
   await taskInstance.execute();
-  done();
 };
 
 class TaskKitTask {

@@ -2,7 +2,8 @@
 const test = require('tap').test;
 const TaskKitTask = require('../index.js');
 const fs = require('fs');
-/*
+const util = require('util');
+
 test('can be constructed', (t) => {
   const kit = {};
   const options = {
@@ -147,21 +148,17 @@ test('fires onFinish event ', async(t) => {
 });
 
 test('writes files to dist directory ', async(t) => {
-  t.plan(3);
+  t.plan(2);
   const task = new TaskKitTask('test', {
     dist: 'test/dist',
     items: {
       output1: 'input1'
     }
   }, {});
-  const outcome = await task.write('output.txt', 'contents');
-  fs.exists('test/dist/output.txt', (exists) => {
-    t.equal(exists, true);
-    fs.readFile('test/dist/output.txt', (err2, data) => {
-      t.equal(err2, null);
-      t.equal(data.toString(), 'contents');
-    });
-  });
+  await task.write('output.txt', 'contents');
+  t.equal(fs.existsSync('test/dist/output.txt'), true);
+  const data = await util.promisify(fs.readFile)('test/dist/output.txt');
+  t.equal(data.toString(), 'contents');
 });
 
 test('handles input as object', async(t) => {
@@ -193,9 +190,9 @@ test('handles input as object', async(t) => {
   t.equal(val[1][1], 'glyf', 'options are correct during process');
   t.end();
 });
-*/
+
 test('writeMany files to dist directory ', async(t) => {
-  t.plan(1);
+  t.plan(2);
   const task = new TaskKitTask('test', {
     dist: 'test/dist',
     items: {
@@ -206,24 +203,13 @@ test('writeMany files to dist directory ', async(t) => {
     'output1.txt': 'contents1',
     'output2.txt': 'contents2'
   });
-  fs.exists('test/dist/output1.txt', (exists) => {
-    t.equal(exists, true);
-    t.end();
-    // fs.readFile('test/dist/output1.txt', (err2, data) => {
-      // t.equal(err2, null);
-      // t.equal(data.toString(), 'contents1');
-      // fs.exists('test/dist/output2.txt', (exists2) => {
-      //   t.equal(exists2, true);
-        // fs.readFile('test/dist/output2.txt', (err3, data2) => {
-        //   t.equal(err3, null);
-        //   t.equal(data2.toString(), 'contents2');
-        //   t.end();
-        // });
-      // });
-    // });
-  });
+  const readFile = util.promisify(fs.readFile);
+  const data = await readFile('test/dist/output1.txt');
+  t.equal(data.toString(), 'contents1');
+  const data2 = await readFile('test/dist/output2.txt');
+  t.equal(data2.toString(), 'contents2');
 });
-/*
+
 test('parallel execute -- will fire process on items in list in separate process', async(t) => {
   const task = new TaskKitTask('test', {
     multithread: true,
@@ -231,11 +217,10 @@ test('parallel execute -- will fire process on items in list in separate process
       output1: 'input1'
     }
   }, {});
-  task.process = (input, output) => {
+  task.process = async(input, output) => {
     // this takes place in a child_process
     return 123;
   };
-  const res = await task.execute();
+  await task.execute();
   t.end();
 });
-*/
