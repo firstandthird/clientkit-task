@@ -105,6 +105,24 @@ test('execute -- will not fire if no items / files passed', async(t) => {
   t.pass();
 });
 
+test('execute -- will warn if no items / files passed', async(t) => {
+  const task = new TaskKitTask('test', {
+  }, {});
+  task.process = () => {
+    t.fail();
+  };
+  task.log = (tags, input) => {
+    t.equal(tags[0], 'warning');
+    t.equal(input, 'No input files, skipping');
+    t.end();
+  };
+  try {
+    await task.execute();
+  } catch (e) {
+    // do nothing
+  }
+});
+
 test('execute -- can be disabled', async(t) => {
   class DisabledTask extends TaskKitTask {
     process() {
@@ -178,6 +196,24 @@ test('writes when contents is stream', async(t) => {
   const data = await readFile('test/dist/stream.txt');
   t.equal(data.toString().startsWith('contents'), true);
   t.end();
+});
+
+test('logs and throw error if there is a stream error', async(t) => {
+  const task = new TaskKitTask('test', {
+    dist: 'test/dist',
+    items: {
+    }
+  }, {});
+  task.log = (tags) => {
+    t.equal(tags[0], 'error');
+  };
+  try {
+    await task.write('stream.txt', fs.createReadStream(`${__dirname}/fixtures/doesNotExist.txt`));
+    t.fail();
+  } catch (e) {
+    t.notEqual(e.toString().indexOf('no such file or directory'), -1);
+    t.end();
+  }
 });
 
 test('will warn if sizeThreshold is specified and is exceeded  ', async(t) => {
@@ -286,5 +322,32 @@ test('writeMany files to dist directory ', async(t) => {
   t.equal(data2.toString(), 'contents2');
 });
 
-test('can override logger');
+test('use the taskkit logger if provided', (t) => {
+  const task = new TaskKitTask('test', {
+    dist: 'test/dist',
+  }, {
+    logger: (input) => {
+      t.end();
+    }
+  });
+  task.log();
+});
+
+test('warns if write called with empty content', async(t) => {
+  // t.plan(2);
+  const task = new TaskKitTask('test', {
+    dist: 'test/dist',
+  }, {
+    logger: (tags, input) => {
+      t.equal(tags[0], 'warning');
+      t.equal(input.startsWith('attempting to write empty string to file'), true);
+    }
+  });
+  try {
+    await task.write('file', undefined);
+  } catch (e) {
+    t.end();
+  }
+});
+
 test('can pass in full config');

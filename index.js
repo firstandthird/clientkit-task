@@ -109,7 +109,7 @@ class TaskKitTask {
       const chunks = [];
       contents.on('error', (err) => {
         this.log(['error'], err);
-        this.emit('end');
+        reject(err);
       });
       contents.on('data', (data) => { chunks.push(data); });
       contents.on('close', () => resolve(Buffer.concat(chunks).toString()));
