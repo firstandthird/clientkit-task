@@ -5,7 +5,7 @@ const aug = require('aug');
 const bytesize = require('bytesize');
 const util = require('util');
 const writeFileAsync = util.promisify(fs.writeFile);
-const mkdir = util.promisify(fs.mkdir);
+const mkdir = require('mkdir-promise');
 
 class TaskKitTask {
   constructor(name, options, kit = {}) {
@@ -121,7 +121,7 @@ class TaskKitTask {
       return;
     }
 
-    await mkdir(outputDir, { recursive: true });
+    await mkdir(outputDir);
     await writeFileAsync(output, contents);
     let numericSize;
     let readableSize;
